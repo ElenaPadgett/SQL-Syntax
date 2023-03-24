@@ -32,11 +32,11 @@
   
 4). Write a query to classify the films into categories depending on their length.
 SELECT title,
-	CASE 
-    WHEN length <= 90 THEN 'Quick bite'
-    WHEN length > 90 and length <= 150 THEN 'Perfect length'
-    WHEN length > 150 THEN 'Dear patience...'
-    END film_length
+   CASE 
+   	WHEN length <= 90 THEN 'Quick bite'
+   	WHEN length > 90 and length <= 150 THEN 'Perfect length'
+   	WHEN length > 150 THEN 'Dear patience...'
+   END film_length
 FROM film
 ORDER BY 1;
 
@@ -55,8 +55,10 @@ FROM
     JOIN customer c1 ON r1.customer_id = c1.customer_id
     JOIN customer c2 ON r2.customer_id = c2.customer_id
     JOIN film f ON r1.inventory_id = f.film_id
-WHERE r1.customer_id <> r2.customer_id
-ORDER BY r1.inventory_id, r1.customer_id;
+WHERE 
+    r1.customer_id <> r2.customer_id
+ORDER BY 
+    r1.inventory_id, r1.customer_id;
 
 6). Self-join: Find how often a customer rents a movie (the average days between rentals). Only include customers who have rented more than 1 movie.
 SELECT 
@@ -73,7 +75,7 @@ HAVING
 ORDER BY avg_days_between_rentals;
 
 7). On average, how often customers rent movies? Create a frequency distribution.
-SELECT 
+    SELECT 
         FLOOR(avg_days_between_rentals) AS days_between_rentals,
         COUNT(*) AS frequency
     FROM (
@@ -88,6 +90,6 @@ SELECT
             c.customer_id
         HAVING 
             COUNT(DISTINCT r1.inventory_id) > 1
-    ) AS t
+    	) AS t
     GROUP BY 
         FLOOR(avg_days_between_rentals);
