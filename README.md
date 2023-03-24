@@ -1,4 +1,4 @@
-# MySQL-Queries-Practice
+# SQL Syntax Practice
 Sample queries to extract data from Sakila database.
 
 Queries are run against a MySQL (version 8.0) database. 
