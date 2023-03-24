@@ -1,0 +1,93 @@
+1). Write a query that finds the number of rentals per customer. 
+
+  SELECT c.customer_id, c.first_name, c.last_name, COUNT(*) num_rentals
+  FROM customer c
+  JOIN rental r ON r.customer_id = c.customer_id
+  GROUP BY c.customer_id
+  ORDER BY 4 DESC;
+  
+2). Write a query that finds the top 10 most frequently rented movies.
+
+  SELECT i.film_id, f.title, count(r.rental_id) times_rented
+  FROM rental r
+  INNER JOIN inventory i
+  ON i.inventory_id = r.inventory_id
+  INNER JOIN film f 
+  ON i.film_id = f.film_id
+  GROUP BY i.film_id
+  ORDER BY 3 desc
+  LIMIT 10;
+  
+3). Write a query that finds revenue per country.
+
+  SELECT co.country_id, co.country, pmnt.amount as revenue
+  FROM 
+    (SELECT customer_id, sum(amount) amount  FROM payment  GROUP BY customer_id) pmnt
+  INNER JOIN customer c ON c.customer_id = pmnt.customer_id
+  INNER JOIN  address a   ON c.address_id = a.address_id
+  INNER JOIN city city    ON a.city_id = city.city_id
+  INNER JOIN  country co ON co.country_id = city.country_id
+  GROUP BY co.country_id
+  ORDER BY 3 desc;
+  
+4). Write a query to classify the films into categories depending on their length.
+SELECT title,
+	CASE 
+    WHEN length <= 90 THEN 'Quick bite'
+    WHEN length > 90 and length <= 150 THEN 'Perfect length'
+    WHEN length > 150 THEN 'Dear patience...'
+    END film_length
+FROM film
+ORDER BY 1;
+
+5). Self-Join: Find the pairs of customers who borrowed the same movie.
+
+SELECT 
+    c1.first_name AS customer1_first_name,
+    c1.last_name AS customer1_last_name,
+    c2.first_name AS customer2_first_name,
+    c2.last_name AS customer2_last_name,
+    r1.inventory_id,
+    f.title
+FROM 
+    rental r1
+    JOIN rental r2 ON r1.inventory_id = r2.inventory_id AND r1.rental_id < r2.rental_id
+    JOIN customer c1 ON r1.customer_id = c1.customer_id
+    JOIN customer c2 ON r2.customer_id = c2.customer_id
+    JOIN film f ON r1.inventory_id = f.film_id
+WHERE r1.customer_id <> r2.customer_id
+ORDER BY r1.inventory_id, r1.customer_id;
+
+6). Self-join: Find how often a customer rents a movie (the average days between rentals). Only include customers who have rented more than 1 movie.
+SELECT 
+    c.customer_id, 
+    ROUND(AVG(DATEDIFF(r2.rental_date, r1.rental_date))) AS avg_days_between_rentals
+FROM 
+    rental r1
+    JOIN rental r2 ON r1.customer_id = r2.customer_id AND r1.rental_id < r2.rental_id
+    JOIN customer c ON r1.customer_id = c.customer_id
+GROUP BY 
+    c.customer_id
+HAVING 
+    COUNT(DISTINCT r1.inventory_id) > 1
+ORDER BY avg_days_between_rentals;
+
+7). On average, how often customers rent movies? Create a frequency distribution.
+SELECT 
+        FLOOR(avg_days_between_rentals) AS days_between_rentals,
+        COUNT(*) AS frequency
+    FROM (
+        SELECT 
+            c.customer_id, 
+            AVG(DATEDIFF(r2.rental_date, r1.rental_date)) AS avg_days_between_rentals
+        FROM 
+            rental r1
+            JOIN rental r2 ON r1.customer_id = r2.customer_id AND r1.rental_id < r2.rental_id
+            JOIN customer c ON r1.customer_id = c.customer_id
+        GROUP BY 
+            c.customer_id
+        HAVING 
+            COUNT(DISTINCT r1.inventory_id) > 1
+    ) AS t
+    GROUP BY 
+        FLOOR(avg_days_between_rentals);
